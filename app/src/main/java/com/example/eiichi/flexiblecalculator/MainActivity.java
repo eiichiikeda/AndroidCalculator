@@ -1,6 +1,7 @@
 package com.example.eiichi.flexiblecalculator;
 
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -35,6 +37,11 @@ public class MainActivity extends AppCompatActivity
     Double   mResult_;
     boolean mArithmeticPressed_;
     ArithmeticMode mCurrentArithmeticMode_;
+
+    // 幅
+    int mWidth_; // 全体の幅
+    int mNumberTableCurrentWidth_;
+    int mArithmeticCurrentWidth_;
 
 
     @Override
@@ -66,8 +73,14 @@ public class MainActivity extends AppCompatActivity
 
         //列を追加する
         TableLayout tableLayout = (TableLayout)findViewById(R.id.mTableLayout_);
+//        tableLayout.setColumnStretchable(0, true);
+//        tableLayout.setColumnStretchable(1, true);
+//        tableLayout.setColumnStretchable(2, true);
         for (int i = 0; i < 3; ++i) {
             TableRow tableRow = new TableRow(this);
+            //TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, 150);
+            //TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+            //tableRow.setLayoutParams(layoutParams);
             for (int ii = 0; ii < 3; ++ii) {
                 Button numberButton = new Button(this);
 
@@ -76,19 +89,114 @@ public class MainActivity extends AppCompatActivity
 
                 numberButton.setId(getCalculatorStringNumber(i, ii));
                 numberButton.setText(getCalculatorStringNumber(i, ii).toString());
-                numberButton.setLayoutParams(new TableRow.LayoutParams(
-                        //ViewGroup.LayoutParams.MATCH_PARENT,
-                        0, // どちらでも良いのか？
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        1));
+                TableRow.LayoutParams buttonLayoutParams = new TableRow.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+                //TableRow.LayoutParams buttonLayoutParams = new TableRow.LayoutParams(0, 300);
+                numberButton.setLayoutParams(buttonLayoutParams );
+
+
                 tableRow.addView(numberButton);
+                numberButton.setBackgroundResource(R.drawable.button_state);
 
             }
             tableLayout.addView(tableRow, createParam(MP, MP));
         }
 
+        Button numberButton = new Button(this);
+        numberButton.setOnClickListener(new ButtonClickListener(this));
+        numberButton.setId(0);
+        numberButton.setText("0");
+        numberButton.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams buttonLayoutParams = new TableRow.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        numberButton.setLayoutParams(buttonLayoutParams);
+
+        Button numberButton2 = new Button(this);
+        numberButton2.setOnClickListener(new ButtonClickListener(this));
+        numberButton2.setId(-1);
+        numberButton2.setText("-1");
+        numberButton2.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams buttonLayoutParams2 = new TableRow.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 2);
+        numberButton2.setLayoutParams(buttonLayoutParams2);
+
+
+        TableRow tableRow = new TableRow(this);
+        TableRow.LayoutParams layoutParams3 = new TableRow.LayoutParams();
+        layoutParams3.span = 2;
+        tableRow.addView(numberButton);
+        tableRow.addView(numberButton2);
+        //TableLayout tableLayout2 = (TableLayout)findViewById(R.id.mTableLayout2_);
+        tableLayout.addView(tableRow, createParam(MP, MP));
+
+        // 右側
+        LinearLayout arithmeticLayout = (LinearLayout) findViewById(R.id.mArithmeticLayout_);
+
+        Button dButton = new Button(this);
+        dButton.setText("÷");
+        dButton.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams dButtonLayout = new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0,1);
+        dButton.setLayoutParams(dButtonLayout);
+        arithmeticLayout.addView(dButton);
+
+        Button tButton = new Button(this);
+        tButton.setText("×");
+        tButton.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams tButtonLayout = new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0,1);
+        tButton.setLayoutParams(tButtonLayout);
+        arithmeticLayout.addView(tButton);
+
+        Button mButton = new Button(this);
+        mButton.setText("－");
+        mButton.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams mButtonLayout = new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0,1);
+        mButton.setLayoutParams(mButtonLayout);
+        arithmeticLayout.addView(mButton);
+
+        Button pButton = new Button(this);
+        pButton.setText("＋");
+        pButton.setBackgroundResource(R.drawable.button_state);
+        TableRow.LayoutParams pButtonLayout = new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0,1);
+        pButton.setLayoutParams(pButtonLayout);
+        arithmeticLayout.addView(pButton);
+
+
 
     }
+
+    // このメソッドだとViewのWidth/Heightが取れる
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        mWidth_ = findViewById(R.id.mLinearLayout1_).getWidth();
+        mNumberTableCurrentWidth_ = findViewById(R.id.mTableLayout_).getWidth();
+        mArithmeticCurrentWidth_ = findViewById(R.id.mArithmeticLayout_).getWidth();
+
+        TextView textView = (TextView) findViewById(R.id.mButterNumberTextView_);
+        //textView.setText(value.toString());
+    }
+
+    public void onLeftClicked    (View view) {
+        TableLayout tableLayout = (TableLayout)findViewById(R.id.mTableLayout_);
+        mNumberTableCurrentWidth_ = mNumberTableCurrentWidth_ - 100;
+        TableRow.LayoutParams tableLayoutParams = new TableRow.LayoutParams(mNumberTableCurrentWidth_, ViewGroup.LayoutParams.MATCH_PARENT);
+        tableLayout.setLayoutParams(tableLayoutParams );
+
+        mArithmeticCurrentWidth_ = mArithmeticCurrentWidth_ + 100;
+        LinearLayout linearLayout = (LinearLayout)findViewById(R.id.mArithmeticLayout_);
+        LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(mArithmeticCurrentWidth_, ViewGroup.LayoutParams.MATCH_PARENT);
+        linearLayout.setLayoutParams(linearLayoutParams );
+
+    }
+    public void onRightClicked    (View view) {
+        TableLayout tableLayout = (TableLayout)findViewById(R.id.mTableLayout_);
+        mNumberTableCurrentWidth_ = mNumberTableCurrentWidth_ + 100;
+        TableRow.LayoutParams buttonLayoutParams = new TableRow.LayoutParams(mNumberTableCurrentWidth_, ViewGroup.LayoutParams.MATCH_PARENT);
+        tableLayout.setLayoutParams(buttonLayoutParams);
+
+        mArithmeticCurrentWidth_ = mArithmeticCurrentWidth_ - 100;
+        LinearLayout linearLayout = (LinearLayout)findViewById(R.id.mArithmeticLayout_);
+        LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(mArithmeticCurrentWidth_, ViewGroup.LayoutParams.MATCH_PARENT);
+        linearLayout.setLayoutParams(linearLayoutParams );
+    }
+
     private void initializeSelf() {
         mHalfwayNumber_ = 0.0;
         mResult_ = 0.0;
@@ -97,7 +205,6 @@ public class MainActivity extends AppCompatActivity
         initializeTextView(R.id.mResultTextView_, "0.0");
         mArithmeticPressed_ = false;
         mCurrentArithmeticMode_ = ArithmeticMode.NON;
-
     }
     private void initializeTextView(int aId, String aText) {
         TextView textView_ = (TextView) findViewById(aId);
@@ -241,6 +348,17 @@ public class MainActivity extends AppCompatActivity
             }
             else if (2 == aRow) {
                 return new Integer(3);
+            }
+        }
+        else if (3 == aColumn){
+            if (0 == aRow) {
+                return new Integer(0);
+            }
+            else if (1 == aRow) {
+                return new Integer(-1);
+            }
+            else if (2 == aRow) {
+                return new Integer(-2);
             }
         }
         return new Integer(0);
